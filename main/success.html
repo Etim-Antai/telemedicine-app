@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/styles.css">
+    <title>Login</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Login</h1>
+        <form action="/api/login" method="POST" class="login-form" id="login-form">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Email" required>
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Password" required>
+
+            <button type="submit" id="login-button">Login</button>
+        </form>
+
+        <!-- Feedback Message -->
+        <div id="feedback" style="margin-top: 10px; color: red;"></div>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', function (event) {
+            // Prevent default form submission
+            event.preventDefault();
+
+            // Disable the submit button to prevent duplicate submissions
+            const loginButton = document.getElementById('login-button');
+            loginButton.disabled = true;
+
+            // Show loading message
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = "Logging in...";
+
+            // Handle form submission
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+
+            // Send the login data to the server
+            fetch('http://localhost:9900/api/login', { // Updated URL
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errData => {
+                            throw new Error(errData.message || 'Network response was not ok');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Success message
+                    if (data.success) {
+                        // Redirect to the user's profile page on successful login
+                        window.location.href = 'profile.html'; // Redirect to profile.html
+                    } else {
+                        // Show error message
+                        feedback.textContent = data.message || "Invalid email or password.";
+                    }
+                })
+                .catch(error => {
+                    // Handle error
+                    feedback.textContent = "Error logging in: " + error.message;
+                })
+                .finally(() => {
+                    // Re-enable the button for future submissions
+                    loginButton.disabled = false;
+                });
+        });
+    </script>
+</body>
+
+</html>

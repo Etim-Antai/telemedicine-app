@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/styles.css"> <!-- Ensure path is correct -->
+    <title>Login - Telemedicine App</title>
+    <style>
+        /* Internal styles for quick reference; consider moving these to styles.css for maintainability */
+        .container {
+            text-align: center;
+            margin: 50px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .button {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 15px 25px;
+            font-size: 18px;
+            text-decoration: none;
+            color: white;
+            background-color: #007BFF;
+            border-radius: 5px;
+            border: none; /* Add border none for button */
+            cursor: pointer; /* Change cursor on hover for better UX */
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+
+        #feedback {
+            margin-top: 10px;
+            color: red; /* Default color for feedback */
+            text-align: center;
+        }
+
+        .success {
+            color: green; /* Success message color */
+        }
+
+        .loading {
+            color: blue; /* Loading message color */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Login</h1>
+        <form action="/api/login" method="POST" class="login-form" id="login-form">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Enter your email" required>
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Password" required>
+
+            <button type="submit" id="login-button" class="button">Login</button>
+        </form>
+
+        <div id="feedback" aria-live="polite"></div> <!-- Feedback Message -->
+
+        <div style="margin-top: 20px;">
+            <a href="registration.html" class="button">Don't have an account? Register here</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            const loginButton = document.getElementById('login-button');
+            loginButton.disabled = true; // Disable the button to prevent multiple submissions
+
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = "Logging in...";
+            feedback.className = 'loading'; // Show loading message
+
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries()); // Extract form data
+
+            fetch('http://localhost:9900/api/login', { // Ensure full URL is used
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data), // Send the JSON string
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message || 'Login failed');
+                    });
+                }
+                return response.json(); // Parse response as JSON
+            })
+            .then(data => {
+                if (data.success) {
+                    // Save token and patient data in localStorage
+                    localStorage.setItem('authToken', data.token); // Store the auth token (replace token retrieval as needed)
+                    localStorage.setItem('patientData', JSON.stringify({
+                        email: data.email, 
+                        first_name: data.first_name, 
+                        last_name: data.last_name, 
+                        phone: data.phone 
+                    }));
+
+                    feedback.textContent = `Login successful. Welcome back, ${data.first_name} ${data.last_name}!`;
+                    feedback.className = 'success'; // Indicates success
+
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html'; // Redirect to dashboard
+                    }, 2000);
+                } else {
+                    feedback.textContent = data.message || "Invalid email or password.";
+                    feedback.className = ''; // Reset class for error
+                }
+            })
+            .catch(error => {
+                feedback.textContent = "Error logging in: " + error.message;
+                feedback.className = ''; // Reset class for error
+            })
+            .finally(() => {
+                loginButton.disabled = false; // Always re-enable the login button
+            });
+        });
+    </script>
+</body>
+</html>

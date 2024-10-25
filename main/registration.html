@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Registration</title>
+    <link rel="stylesheet" type="text/css" href="register.css">
+    <script>
+        async function registerPatient(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+
+            console.log('Sending data:', data); // Log the data being sent
+
+            try {
+                const response = await fetch('http://localhost:9900/api/register', { // Ensure this URL matches your backend endpoint
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data) // Send form data as JSON
+                });
+
+                console.log('Response status:', response.status); // Log response status
+
+                // Check if the response is JSON
+                const responseData = await response.json();
+                console.log('Response data:', responseData); // Log the full response data
+
+                if (!response.ok) {
+                    console.error('Error:', responseData);
+                    alert('Error: ' + (responseData.message || 'An error occurred')); // Show message from server
+                } else {
+                    alert(responseData.message); // Show success message
+                    window.location.href = "login.html"; // Redirect to a success page (you can create a success.html)
+                }
+            } catch (err) {
+                console.error('Fetch error:', err);
+                alert('Error: ' + (err.message || 'An error occurred')); // Show fetch error
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <h1>Patient Registration</h1>
+    <form id="register-form" onsubmit="registerPatient(event)">
+        <label for="first_name">First Name</label>
+        <input type="text" id="first_name" name="first_name" placeholder="Enter First Name" required>
+
+        <label for="last_name">Last Name</label>
+        <input type="text" id="last_name" name="last_name" placeholder="Enter Last Name" required>
+
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="Enter Email" required>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter Password" required minlength="10">
+
+        <label for="phone">Phone</label>
+        <input type="tel" id="phone" name="phone" placeholder="Enter Phone Number" required>
+        <!-- Removed pattern attribute -->
+
+        <label for="date_of_birth">Date of Birth</label>
+        <input type="date" id="date_of_birth" name="date_of_birth" required>
+
+        <label for="gender">Gender</label>
+        <select id="gender" name="gender" required>
+            <option value="" disabled selected>Select Gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+        </select>
+
+        <label for="address">Address</label>
+        <input type="text" id="address" name="address" placeholder="Enter Address" required>
+
+        <button type="submit">Register Patient</button>
+    </form>
+</body>
+
+</html>

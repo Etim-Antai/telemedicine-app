@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/styles.css">
+    <title>Telemedicine Dashboard</title>
+    <style>
+        /* Dashboard styles */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .button {
+            margin: 5px;
+            padding: 10px 15px;
+            text-decoration: none;
+            color: white;
+            background-color: #007bff; /* Primary color */
+            border-radius: 5px;
+        }
+
+        .button.logout {
+            background-color: #dc3545; /* Danger color for logout */
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            margin-top: 20px;
+        }
+
+        /* Loading styles */
+        #loading {
+            text-align: center;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading">
+        <h2>Please Wait, Your request is being processed...</h2>
+    </div>
+
+    <div class="container" id="dashboard-container" style="display: none;">
+        <h1>Patient Dashboard</h1>
+        <h2 id="welcome-message">Welcome to Your Dashboard</h2>
+
+        <h3>Available Actions:</h3>
+        <div class="actions">
+            <a href="profile.html" class="button">View Profile</a>
+            <a href="appointments.html" class="button">Book Appointments</a>
+            <a href="appointment-history.html" class="button">View Appointment History</a>
+            <a href="doctors.html" class="button">View Doctors</a>
+            <a href="#" id="logout-button" class="button logout">Logout</a>
+        </div>
+
+        <h3>Stay Healthy!</h3>
+    </div>
+
+    <script>
+        // Function to check if user is logged in
+        window.onload = function () {
+            const userData = localStorage.getItem('patientData');
+
+            if (!userData) {
+                console.log("No user data found, redirecting to login");
+                window.location.href = 'login.html'; // Redirect to login if not logged in
+                return;
+            }
+
+            // Parse the patient data
+            const patient = JSON.parse(userData);
+            // Update the welcome message to include first and last name
+            document.getElementById('welcome-message').textContent = `Welcome, ${patient.first_name || 'Guest'} ${patient.last_name || ''}`.trim();
+            document.getElementById('dashboard-container').style.display = 'block'; // Show the dashboard
+            document.getElementById('loading').style.display = 'none'; // Hide loading message
+        };
+
+        // Logout function
+        document.getElementById('logout-button').addEventListener('click', function (event) {
+            event.preventDefault();
+            localStorage.removeItem('patientData'); // Clear user data
+            fetch('/api/logout', { method: 'POST' }) // Optional: Logout endpoint to destroy session
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = 'login.html'; // Redirect to login
+                    }
+                });
+        });
+    </script>
+</body>
+
+</html>
